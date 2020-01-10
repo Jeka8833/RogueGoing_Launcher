@@ -1,5 +1,13 @@
 package com.Jeka8833.Launcher.GUI;
 
+import com.Jeka8833.Launcher.Util;
+import com.Jeka8833.Launcher.config.Config;
+
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.UIManager;
@@ -10,6 +18,8 @@ public class AboutFrame extends javax.swing.JFrame {
     public AboutFrame() {
         initComponents();
         setLocationRelativeTo(null);
+        last_check.setText("Last check update is "
+                        + new SimpleDateFormat("HH:mm dd-MM-yyyy").format(new Date(Config.config.lastUpdate)));
     }
 
     @SuppressWarnings("unchecked")
@@ -23,7 +33,8 @@ public class AboutFrame extends javax.swing.JFrame {
         bug = new javax.swing.JLabel();
         last_check = new javax.swing.JLabel();
         exit_btn = new javax.swing.JLabel();
-        Version = new javax.swing.JLabel();
+        Version_txt = new javax.swing.JLabel();
+        version = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("com/Jeka8833/Launcher/local/Bundle"); // NOI18N
@@ -77,7 +88,9 @@ public class AboutFrame extends javax.swing.JFrame {
             }
         });
 
-        Version.setText(bundle.getString("AboutFrame.Version.text")); // NOI18N
+        Version_txt.setText(bundle.getString("AboutFrame.Version_txt.text")); // NOI18N
+
+        version.setText(Main.VERSION);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -107,7 +120,9 @@ public class AboutFrame extends javax.swing.JFrame {
                         .addComponent(exit_btn)
                         .addGap(8, 8, 8))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(Version)
+                        .addComponent(Version_txt)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(version, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
@@ -121,7 +136,9 @@ public class AboutFrame extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(bug)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(Version)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(Version_txt, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(version, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(last_check)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -144,7 +161,32 @@ public class AboutFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_bugMouseExited
 
     private void bugMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_bugMousePressed
-        // TODO add your handling code here:
+        final String url = "https://github.com/Jeka8833/RogueGoing_Launcher";
+        try {
+            switch (Util.getOS()) {
+                case WINDOWS:
+                    Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + url);
+                    break;
+                case LINUX:
+                    final String[] browsers = {"epiphany", "firefox", "mozilla", "konqueror",
+                        "netscape", "opera", "links", "lynx"};
+
+                    final StringBuilder cmd = new StringBuilder();
+                    for (int i = 0; i < browsers.length; i++) {
+                        if (i == 0) {
+                            cmd.append(String.format("%s \"%s\"", browsers[i], url));
+                        } else {
+                            cmd.append(String.format(" || %s \"%s\"", browsers[i], url));
+                        }
+                    }
+                    Runtime.getRuntime().exec(new String[]{"sh", "-c", cmd.toString()});
+                    break;
+                case MAC:
+                    Runtime.getRuntime().exec("open " + url);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }//GEN-LAST:event_bugMousePressed
 
     private void exit_btnMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_exit_btnMouseExited
@@ -156,14 +198,23 @@ public class AboutFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_exit_btnMouseEntered
 
     private void exit_btnMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_exit_btnMousePressed
-       dispose();
+        dispose();
     }//GEN-LAST:event_exit_btnMousePressed
 
     private void check_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_check_btnActionPerformed
-        // TODO add your handling code here:
+        last_check.setText("Checking...");
+        new Thread(() -> {
+            if (Main.checkUpdates()) {
+                last_check.setText("Download and install...");
+                Main.checkUpdateAndDownload();
+            } else {
+                last_check.setText("No updates, last check is "
+                        + new SimpleDateFormat("HH:mm dd-MM-yyyy").format(new Date(Config.config.lastUpdate)));
+            }
+        }).start();
     }//GEN-LAST:event_check_btnActionPerformed
 
-    public static void main(String args[]) {
+    public static void main(String[] args) {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
@@ -177,11 +228,12 @@ public class AboutFrame extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel Image;
     private javax.swing.JLabel Name;
-    private javax.swing.JLabel Version;
+    private javax.swing.JLabel Version_txt;
     private javax.swing.JCheckBox auto_check;
     private javax.swing.JLabel bug;
     private javax.swing.JButton check_btn;
     private javax.swing.JLabel exit_btn;
     private javax.swing.JLabel last_check;
+    private javax.swing.JLabel version;
     // End of variables declaration//GEN-END:variables
 }
