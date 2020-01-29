@@ -4,6 +4,7 @@ import com.Jeka8833.Launcher.Util;
 import com.Jeka8833.Launcher.WebConnect;
 import com.Jeka8833.Launcher.config.Config;
 import mslinks.ShellLink;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,15 +16,21 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Calendar;
+import java.util.ResourceBundle;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class Main {
 
+    private static final Logger log = LogManager.getLogger(Main.class);
+    
     public static final String VERSION = "1.0.3";
 
-    private static final JLabel state = new JLabel("Init folders");
-    private static final JFrame frame = new JFrame("Updater");
+    private static final ResourceBundle bundle = ResourceBundle.getBundle("com/Jeka8833/Launcher/local/Bundle");
+    private static final JLabel state = new JLabel(bundle.getString("Main.state"));
+    private static final JFrame frame = new JFrame(bundle.getString("Main.title"));
 
-    public static void init() {
+    private static void init() {
         final JProgressBar pb = new JProgressBar();
         final Container container = frame.getContentPane();
 
@@ -48,8 +55,9 @@ public class Main {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
-            e.printStackTrace();
+            log.error("Fail set look and feel", e);
         }
+        log.info("Create window");
         EventQueue.invokeLater(Main::init);
 
         try {
@@ -64,7 +72,7 @@ public class Main {
                 try {
                     Files.copy(pathFile, configFile, StandardCopyOption.REPLACE_EXISTING);
                     if (Util.getOS() == Util.OS.WINDOWS) {
-                        state.setText("Create link");
+                        state.setText(bundle.getString("Main.create.link"));
                         final Path desktop = Paths.get(System.getProperty("user.home") + "\\Desktop\\RogueGoing.lnk");
                         try {
                             if (Files.exists(desktop)) {
@@ -72,30 +80,32 @@ public class Main {
                             }
                             ShellLink.createLink(configFile.toString(), desktop.toString());
                         } catch (IOException ex) {
-                            ex.printStackTrace();
+                            log.error("Fail create link", ex);
                         }
                     }
                     reloadApp(configFile);
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    log.error("Fail copy file", ex);
                 }
             }
             if (Config.config.update && Calendar.getInstance().getTimeInMillis() > Config.config.lastUpdate + 43200000) {
                 checkUpdateAndDownload();
             }
             frame.dispose();
+            log.info("Run main window");
             GUI.main(null);
         } catch (URISyntaxException e) {
-            e.printStackTrace();
+            log.error("Error path", e);
         }
     }
 
     public static void checkUpdateAndDownload() {
-        state.setText("Check updates");
+        log.info("Check updates");
+        state.setText(bundle.getString("Main.check.update"));
         try {
             final String[] arr = WebConnect.getString(WebConnect.version).split(";");
             if (isVersion(arr[0])) {
-                state.setText("Download update");
+                state.setText(bundle.getString("Main.download.update"));
                 final Path update = File.createTempFile("Updater", ".jar").toPath();
                 WebConnect.downloadFile(arr[1], update);
                 reloadApp(update);
@@ -103,7 +113,7 @@ public class Main {
             Config.config.lastUpdate = Calendar.getInstance().getTimeInMillis();
             Config.writeConfig();
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Fail check updates", e);
         }
     }
 
@@ -118,16 +128,16 @@ public class Main {
         }
     }
 
-    private static void reloadApp(final Path path) {
+    private static void reloadApp(@NotNull final Path path) {
         try {
             Runtime.getRuntime().exec(new String[]{"java", "-jar", path.toString()});
             System.exit(0);
         } catch (IOException ex) {
-            ex.printStackTrace();
+            log.error("Fail run app", ex);
         }
     }
 
-    public static boolean isVersion(final String version) {
+    private static boolean isVersion(@NotNull final String version) {
         final String[] ver1 = VERSION.split("\\.");
         final String[] ver2 = version.split("\\.");
         if (ver1.length != ver2.length) {

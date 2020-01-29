@@ -1,5 +1,7 @@
 package com.Jeka8833.Launcher;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -7,11 +9,11 @@ public class Util {
 
     public enum OS {
         WINDOWS, LINUX, MAC, SOLARIS, OTHER
-    };
+    }
 
     public enum BIT {
         B_64, B_32, OTHER
-    };
+    }
 
     public static OS getOS() {
         final String operSys = System.getProperty("os.name").toLowerCase();
@@ -38,6 +40,7 @@ public class Util {
         }
     }
 
+    @NotNull
     public static Path defaultPath() {
         switch (getOS()) {
             case WINDOWS:

@@ -422,7 +422,7 @@
                       <Group type="103" groupAlignment="1" attributes="0">
                           <Component id="line_language" pref="634" max="32767" attributes="0"/>
                           <Component id="language_scroll" alignment="1" max="32767" attributes="0"/>
-                          <Component id="Language_text" alignment="1" pref="634" max="32767" attributes="0"/>
+                          <Component id="Language_text" alignment="1" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
                   </Group>
@@ -643,6 +643,15 @@
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JTextField" name="GameDir">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Config.config.gamePath" type="code"/>
+                        </Property>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="GameDirFocusGained"/>
+                        <EventHandler event="focusLost" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="GameDirFocusLost"/>
+                      </Events>
                     </Component>
                     <Container class="javax.swing.JPanel" name="GameDir_Open_btn">
                       <Properties>
@@ -748,6 +757,15 @@
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JTextField" name="JavaDir">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Config.config.javaPath" type="code"/>
+                        </Property>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="JavaDirFocusGained"/>
+                        <EventHandler event="focusLost" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="JavaDirFocusLost"/>
+                      </Events>
                     </Component>
                     <Container class="javax.swing.JPanel" name="JavaDir_Open_btn">
                       <Properties>
@@ -853,6 +871,15 @@
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JTextField" name="JVMOp">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Config.config.JVMOp" type="code"/>
+                        </Property>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="JVMOpFocusGained"/>
+                        <EventHandler event="focusLost" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="JVMOpFocusLost"/>
+                      </Events>
                     </Component>
                   </SubComponents>
                 </Container>

@@ -89,7 +89,7 @@ public class GenerateHash extends javax.swing.JFrame {
             } else {
                 try {
                     for (Path path : Files.walk(fc.getSelectedFile().toPath()).filter(Files::isRegularFile).collect(Collectors.toList())) {
-                        System.out.println(path + " " + Hash.getHashFile(path));
+                        System.out.println("\"" + path + "\": \"" + Hash.getHashFile(path) + "\"");
                     }
                 } catch (IOException ex) {
                     Logger.getLogger(GenerateHash.class.getName()).log(Level.SEVERE, null, ex);

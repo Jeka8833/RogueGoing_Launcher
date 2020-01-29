@@ -2,36 +2,170 @@ package com.Jeka8833.Launcher.GUI;
 
 import com.Jeka8833.Launcher.FileUpdate;
 import com.Jeka8833.Launcher.JavaFilter;
+import com.Jeka8833.Launcher.Language;
+import com.Jeka8833.Launcher.ResetColor;
 import com.Jeka8833.Launcher.config.Config;
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.util.Random;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.awt.Font;
+import java.awt.FontFormatException;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ResourceBundle;
 import javax.swing.Box;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import org.apache.logging.log4j.LogManager;
 
 public final class GUI extends javax.swing.JFrame {
-    
+
+    private static final org.apache.logging.log4j.Logger log = LogManager.getLogger(GUI.class);
+    private static final ResourceBundle bundle = ResourceBundle.getBundle("com/Jeka8833/Launcher/local/Bundle");
+    private static final List<ResetColor> resetColor = new ArrayList<>();
+    private static String activeLang = "";
+    private Font font;
+
     public GUI() {
+        try {
+            font = Font.createFont(Font.TRUETYPE_FONT,
+                    GUI.class.getResourceAsStream("/com/Jeka8833/Launcher/local/NotoSans-Regular.ttf")
+            ).deriveFont(Font.PLAIN, 22.0f);
+        } catch (FontFormatException | IOException ex) {
+            log.error("Font not loaded", ex);
+        }
         initComponents();
 
-        for(int i = 0; i < 500; i ++){
-            language_pane.add(getElem());
+        Language.init();
+        activeLang = Config.config.language;
+        log.debug("Language: " + activeLang);
+        for (Language lan : Language.lang) {
+            language_pane.add(getElem(lan.name, lan.select, lan.selected, lan.downloaded));
+        }
+        for (ResetColor res : resetColor) {
+            res.reset();
         }
         language_pane.add(Box.createVerticalGlue());
 
+        ProgressBar.setVisible(false);
+
         updatePage(0);
     }
-    
-    public JPanel getElem(){
-        JPanel panel = new JPanel();
-        panel.setSize(100, 50);
-        panel.setMaximumSize(new Dimension(100, 50));
-        panel.setBackground(new Color(new Random().nextInt()));
+
+    public JPanel getElem(final String names, final String select, final String selected, final boolean downloaded) {
+        final GridBagLayout jPanel1Layout = new GridBagLayout();
+        final JPanel panel = new JPanel();
+        final GridBagConstraints button_con = new GridBagConstraints();
+        final JPanel button = new JPanel();
+        final JLabel button_text = new JLabel(select);
+        final GridBagConstraints name_con = new GridBagConstraints();
+        final JLabel name = new JLabel(names);
+        final GridBagConstraints line_con = new GridBagConstraints();
+        final JPanel line = new JPanel();
+
+        button_con.anchor = java.awt.GridBagConstraints.EAST;
+        button_con.insets = new java.awt.Insets(0, 0, 0, 10);
+
+        name_con.anchor = java.awt.GridBagConstraints.WEST;
+        name_con.insets = new java.awt.Insets(0, 10, 0, 0);
+
+        line_con.gridy = 1;
+        line_con.gridwidth = 2;
+        line_con.fill = GridBagConstraints.HORIZONTAL;
+
+        jPanel1Layout.columnWidths = new int[]{0, 150};
+        jPanel1Layout.rowHeights = new int[]{48, 2};
+        jPanel1Layout.columnWeights = new double[]{0.9, 0.1};
+        jPanel1Layout.rowWeights = new double[]{1.0, 0.0};
+
+        if (downloaded) {
+            button.setBackground(new Color(253, 150, 87));
+        } else {
+            button.setBackground(new Color(43, 206, 215));
+        }
+        button.setLayout(new BorderLayout());
+        button.add(button_text);
+        button.setPreferredSize(new Dimension(150, 50));
+        button.addMouseListener(new java.awt.event.MouseAdapter() {
+
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                if (activeLang.equals(names)) {
+                    button.setBackground(new Color(151, 200, 60));
+                } else {
+                    if (downloaded) {
+                        button.setBackground(new Color(245, 122, 88));
+                    } else {
+                        button.setBackground(new Color(0, 173, 181));
+                    }
+                }
+            }
+
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                if (activeLang.equals(names)) {
+                    button.setBackground(new Color(182, 228, 95));
+                } else {
+                    if (downloaded) {
+                        button.setBackground(new Color(253, 150, 87));
+                    } else {
+                        button.setBackground(new Color(43, 206, 215));
+                    }
+                }
+            }
+
+            @Override
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                activeLang = names;
+                Config.config.language = names;
+                Config.writeConfig();
+                for (ResetColor res : resetColor) {
+                    res.reset();
+                }
+                button.setBackground(new Color(151, 200, 60));
+            }
+        });
+
+        resetColor.add(() -> {
+            if (activeLang.equals(names)) {
+                button_text.setText(selected);
+                button.setBackground(new Color(182, 228, 95));
+            } else {
+                button_text.setText(select);
+                if (downloaded) {
+                    button.setBackground(new Color(253, 150, 87));
+                } else {
+                    button.setBackground(new Color(43, 206, 215));
+                }
+            }
+        });
+
+        button_text.setForeground(new Color(0, 0, 0));
+        button_text.setFont(font.deriveFont(Font.PLAIN, 18.0f));
+        button_text.setHorizontalAlignment(SwingConstants.CENTER);
+
+        name.setForeground(new Color(239, 239, 239));
+        name.setFont(font);
+
+        line.setBackground(new Color(33, 47, 60));
+        line.setMinimumSize(new Dimension(-1, 2));
+        line.setPreferredSize(new Dimension(-1, 2));
+
+        panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
+        panel.setMinimumSize(new Dimension(80, 30));
+        panel.setBackground(new Color(10, 24, 37));
+        panel.setLayout(jPanel1Layout);
+        panel.add(name, name_con);
+        panel.add(button, button_con);
+        panel.add(line, line_con);
+
         return panel;
     }
 
@@ -40,52 +174,52 @@ public final class GUI extends javax.swing.JFrame {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        toolBar = new JPanel();
-        RogueGoing_btn = new JPanel();
-        RogueGoung_select = new JPanel();
+        toolBar = new javax.swing.JPanel();
+        RogueGoing_btn = new javax.swing.JPanel();
+        RogueGoung_select = new javax.swing.JPanel();
         RogueGoing_Text = new javax.swing.JLabel();
-        Setting_btn = new JPanel();
-        setting_select = new JPanel();
+        Setting_btn = new javax.swing.JPanel();
+        setting_select = new javax.swing.JPanel();
         setting_Text = new javax.swing.JLabel();
-        Language_btn = new JPanel();
-        language_select = new JPanel();
+        Language_btn = new javax.swing.JPanel();
+        language_select = new javax.swing.JPanel();
         Language_Text = new javax.swing.JLabel();
         logo = new javax.swing.JLabel();
-        line_logo = new JPanel();
+        line_logo = new javax.swing.JPanel();
         About_btn = new javax.swing.JLabel();
-        line_logo2 = new JPanel();
-        contentPane = new JPanel();
-        LanguagePage = new JPanel();
+        line_logo2 = new javax.swing.JPanel();
+        contentPane = new javax.swing.JPanel();
+        LanguagePage = new javax.swing.JPanel();
         Language_text = new javax.swing.JLabel();
         language_scroll = new javax.swing.JScrollPane();
-        language_pane = new JPanel();
-        line_language = new JPanel();
-        SettingPage = new JPanel();
+        language_pane = new javax.swing.JPanel();
+        line_language = new javax.swing.JPanel();
+        SettingPage = new javax.swing.JPanel();
         Setting_text = new javax.swing.JLabel();
-        line_setting = new JPanel();
-        Body = new JPanel();
-        GameDirPane = new JPanel();
+        line_setting = new javax.swing.JPanel();
+        Body = new javax.swing.JPanel();
+        GameDirPane = new javax.swing.JPanel();
         GameDir_text = new javax.swing.JLabel();
         GameDir = new javax.swing.JTextField();
-        GameDir_Open_btn = new JPanel();
+        GameDir_Open_btn = new javax.swing.JPanel();
         GameDir_Open_text = new javax.swing.JLabel();
-        JavaDirPane = new JPanel();
+        JavaDirPane = new javax.swing.JPanel();
         JavaDir_text = new javax.swing.JLabel();
         JavaDir = new javax.swing.JTextField();
-        JavaDir_Open_btn = new JPanel();
+        JavaDir_Open_btn = new javax.swing.JPanel();
         JavaDir_Open_text = new javax.swing.JLabel();
-        JVMOpPane = new JPanel();
+        JVMOpPane = new javax.swing.JPanel();
         JVMOp_text = new javax.swing.JLabel();
         JVMOp = new javax.swing.JTextField();
-        BottomSettingPane = new JPanel();
-        Save_btn = new JPanel();
+        BottomSettingPane = new javax.swing.JPanel();
+        Save_btn = new javax.swing.JPanel();
         save_text = new javax.swing.JLabel();
-        Cansel_btn = new JPanel();
+        Cansel_btn = new javax.swing.JPanel();
         cancel_text = new javax.swing.JLabel();
         reset_btn = new javax.swing.JLabel();
-        MainPage = new JPanel();
-        BottomPane = new JPanel();
-        Play_btn = new JPanel();
+        MainPage = new javax.swing.JPanel();
+        BottomPane = new javax.swing.JPanel();
+        Play_btn = new javax.swing.JPanel();
         play_text = new javax.swing.JLabel();
         userName_text = new javax.swing.JLabel();
         UserName = new javax.swing.JTextField();
@@ -96,11 +230,11 @@ public final class GUI extends javax.swing.JFrame {
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("com/Jeka8833/Launcher/local/Bundle"); // NOI18N
         setTitle(bundle.getString("GUI.title")); // NOI18N
         setIconImage(new javax.swing.ImageIcon(getClass().getResource("/com/Jeka8833/Launcher/Image/icon.png")).getImage());
-        setMinimumSize(new Dimension(900, 550));
+        setMinimumSize(new java.awt.Dimension(900, 550));
 
-        toolBar.setBackground(new Color(35, 40, 50));
+        toolBar.setBackground(new java.awt.Color(35, 40, 50));
 
-        RogueGoing_btn.setBackground(new Color(35, 40, 50));
+        RogueGoing_btn.setBackground(new java.awt.Color(35, 40, 50));
         RogueGoing_btn.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 RogueGoing_btnMouseEntered(evt);
@@ -113,8 +247,8 @@ public final class GUI extends javax.swing.JFrame {
             }
         });
 
-        RogueGoung_select.setBackground(new Color(43, 206, 215));
-        RogueGoung_select.setPreferredSize(new Dimension(4, 0));
+        RogueGoung_select.setBackground(new java.awt.Color(43, 206, 215));
+        RogueGoung_select.setPreferredSize(new java.awt.Dimension(4, 0));
 
         javax.swing.GroupLayout RogueGoung_selectLayout = new javax.swing.GroupLayout(RogueGoung_select);
         RogueGoung_select.setLayout(RogueGoung_selectLayout);
@@ -128,7 +262,7 @@ public final class GUI extends javax.swing.JFrame {
         );
 
         RogueGoing_Text.setFont(new java.awt.Font("Tahoma", 1, 18)); // NOI18N
-        RogueGoing_Text.setForeground(new Color(239, 239, 239));
+        RogueGoing_Text.setForeground(new java.awt.Color(239, 239, 239));
         RogueGoing_Text.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/Jeka8833/Launcher/Image/game.png"))); // NOI18N
         RogueGoing_Text.setText(bundle.getString("GUI.RogueGoing_Text.text")); // NOI18N
 
@@ -148,7 +282,7 @@ public final class GUI extends javax.swing.JFrame {
             .addComponent(RogueGoing_Text, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
 
-        Setting_btn.setBackground(new Color(35, 40, 50));
+        Setting_btn.setBackground(new java.awt.Color(35, 40, 50));
         Setting_btn.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 Setting_btnMouseEntered(evt);
@@ -161,8 +295,8 @@ public final class GUI extends javax.swing.JFrame {
             }
         });
 
-        setting_select.setBackground(new Color(43, 206, 215));
-        setting_select.setPreferredSize(new Dimension(4, 0));
+        setting_select.setBackground(new java.awt.Color(43, 206, 215));
+        setting_select.setPreferredSize(new java.awt.Dimension(4, 0));
 
         javax.swing.GroupLayout setting_selectLayout = new javax.swing.GroupLayout(setting_select);
         setting_select.setLayout(setting_selectLayout);
@@ -176,7 +310,7 @@ public final class GUI extends javax.swing.JFrame {
         );
 
         setting_Text.setFont(new java.awt.Font("Tahoma", 1, 18)); // NOI18N
-        setting_Text.setForeground(new Color(239, 239, 239));
+        setting_Text.setForeground(new java.awt.Color(239, 239, 239));
         setting_Text.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/Jeka8833/Launcher/Image/gear.png"))); // NOI18N
         setting_Text.setText(bundle.getString("GUI.setting_Text.text")); // NOI18N
 
@@ -196,7 +330,7 @@ public final class GUI extends javax.swing.JFrame {
             .addComponent(setting_Text, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
 
-        Language_btn.setBackground(new Color(35, 40, 50));
+        Language_btn.setBackground(new java.awt.Color(35, 40, 50));
         Language_btn.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 Language_btnMouseEntered(evt);
@@ -209,8 +343,8 @@ public final class GUI extends javax.swing.JFrame {
             }
         });
 
-        language_select.setBackground(new Color(43, 206, 215));
-        language_select.setPreferredSize(new Dimension(4, 0));
+        language_select.setBackground(new java.awt.Color(43, 206, 215));
+        language_select.setPreferredSize(new java.awt.Dimension(4, 0));
 
         javax.swing.GroupLayout language_selectLayout = new javax.swing.GroupLayout(language_select);
         language_select.setLayout(language_selectLayout);
@@ -224,7 +358,7 @@ public final class GUI extends javax.swing.JFrame {
         );
 
         Language_Text.setFont(new java.awt.Font("Tahoma", 1, 18)); // NOI18N
-        Language_Text.setForeground(new Color(239, 239, 239));
+        Language_Text.setForeground(new java.awt.Color(239, 239, 239));
         Language_Text.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/Jeka8833/Launcher/Image/about.png"))); // NOI18N
         Language_Text.setText(bundle.getString("GUI.Language_Text.text")); // NOI18N
 
@@ -245,14 +379,14 @@ public final class GUI extends javax.swing.JFrame {
         );
 
         logo.setFont(new java.awt.Font("Tahoma", 1, 24)); // NOI18N
-        logo.setForeground(new Color(239, 239, 239));
+        logo.setForeground(new java.awt.Color(239, 239, 239));
         logo.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         logo.setText(bundle.getString("GUI.logo.text")); // NOI18N
         logo.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         logo.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
 
-        line_logo.setBackground(new Color(33, 47, 60));
-        line_logo.setPreferredSize(new Dimension(165, 2));
+        line_logo.setBackground(new java.awt.Color(33, 47, 60));
+        line_logo.setPreferredSize(new java.awt.Dimension(165, 2));
 
         javax.swing.GroupLayout line_logoLayout = new javax.swing.GroupLayout(line_logo);
         line_logo.setLayout(line_logoLayout);
@@ -266,7 +400,7 @@ public final class GUI extends javax.swing.JFrame {
         );
 
         About_btn.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
-        About_btn.setForeground(new Color(239, 239, 239));
+        About_btn.setForeground(new java.awt.Color(239, 239, 239));
         About_btn.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         About_btn.setText(bundle.getString("GUI.About_btn.text")); // NOI18N
         About_btn.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -281,8 +415,8 @@ public final class GUI extends javax.swing.JFrame {
             }
         });
 
-        line_logo2.setBackground(new Color(33, 47, 60));
-        line_logo2.setPreferredSize(new Dimension(140, 2));
+        line_logo2.setBackground(new java.awt.Color(33, 47, 60));
+        line_logo2.setPreferredSize(new java.awt.Dimension(140, 2));
 
         javax.swing.GroupLayout line_logo2Layout = new javax.swing.GroupLayout(line_logo2);
         line_logo2.setLayout(line_logo2Layout);
@@ -331,25 +465,25 @@ public final class GUI extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
-        contentPane.setBackground(new Color(102, 102, 102));
-        contentPane.setPreferredSize(new Dimension(834, 500));
+        contentPane.setBackground(new java.awt.Color(102, 102, 102));
+        contentPane.setPreferredSize(new java.awt.Dimension(834, 500));
         contentPane.setLayout(new javax.swing.OverlayLayout(contentPane));
 
-        LanguagePage.setBackground(new Color(10, 24, 37));
+        LanguagePage.setBackground(new java.awt.Color(10, 24, 37));
 
         Language_text.setFont(new java.awt.Font("Tahoma", 1, 48)); // NOI18N
-        Language_text.setForeground(new Color(239, 239, 239));
+        Language_text.setForeground(new java.awt.Color(239, 239, 239));
         Language_text.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         Language_text.setText(bundle.getString("GUI.Language_text.text")); // NOI18N
 
         language_scroll.setBorder(null);
 
-        language_pane.setBackground(new Color(10, 24, 37));
+        language_pane.setBackground(new java.awt.Color(10, 24, 37));
         language_pane.setLayout(new javax.swing.BoxLayout(language_pane, javax.swing.BoxLayout.PAGE_AXIS));
         language_scroll.setViewportView(language_pane);
 
-        line_language.setBackground(new Color(33, 47, 60));
-        line_language.setPreferredSize(new Dimension(0, 4));
+        line_language.setBackground(new java.awt.Color(33, 47, 60));
+        line_language.setPreferredSize(new java.awt.Dimension(0, 4));
 
         javax.swing.GroupLayout line_languageLayout = new javax.swing.GroupLayout(line_language);
         line_language.setLayout(line_languageLayout);
@@ -371,7 +505,7 @@ public final class GUI extends javax.swing.JFrame {
                 .addGroup(LanguagePageLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(line_language, javax.swing.GroupLayout.DEFAULT_SIZE, 634, Short.MAX_VALUE)
                     .addComponent(language_scroll)
-                    .addComponent(Language_text, javax.swing.GroupLayout.DEFAULT_SIZE, 634, Short.MAX_VALUE))
+                    .addComponent(Language_text, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(0, 0, 0))
         );
         LanguagePageLayout.setVerticalGroup(
@@ -387,15 +521,15 @@ public final class GUI extends javax.swing.JFrame {
 
         contentPane.add(LanguagePage);
 
-        SettingPage.setBackground(new Color(10, 24, 37));
+        SettingPage.setBackground(new java.awt.Color(10, 24, 37));
 
         Setting_text.setFont(new java.awt.Font("Tahoma", 1, 48)); // NOI18N
-        Setting_text.setForeground(new Color(239, 239, 239));
+        Setting_text.setForeground(new java.awt.Color(239, 239, 239));
         Setting_text.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         Setting_text.setText(bundle.getString("GUI.Setting_text.text")); // NOI18N
 
-        line_setting.setBackground(new Color(33, 47, 60));
-        line_setting.setPreferredSize(new Dimension(165, 2));
+        line_setting.setBackground(new java.awt.Color(33, 47, 60));
+        line_setting.setPreferredSize(new java.awt.Dimension(165, 2));
 
         javax.swing.GroupLayout line_settingLayout = new javax.swing.GroupLayout(line_setting);
         line_setting.setLayout(line_settingLayout);
@@ -408,17 +542,27 @@ public final class GUI extends javax.swing.JFrame {
             .addGap(0, 4, Short.MAX_VALUE)
         );
 
-        Body.setBackground(new Color(10, 24, 37));
+        Body.setBackground(new java.awt.Color(10, 24, 37));
         Body.setLayout(new java.awt.GridBagLayout());
 
-        GameDirPane.setBackground(new Color(10, 24, 37));
-        GameDirPane.setPreferredSize(new Dimension(350, 25));
+        GameDirPane.setBackground(new java.awt.Color(10, 24, 37));
+        GameDirPane.setPreferredSize(new java.awt.Dimension(350, 25));
 
         GameDir_text.setFont(new java.awt.Font("Tahoma", 1, 16)); // NOI18N
-        GameDir_text.setForeground(new Color(239, 239, 239));
+        GameDir_text.setForeground(new java.awt.Color(239, 239, 239));
         GameDir_text.setText(bundle.getString("GUI.GameDir_text.text")); // NOI18N
 
-        GameDir_Open_btn.setBackground(new Color(43, 206, 215));
+        GameDir.setText(Config.config.gamePath);
+        GameDir.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                GameDirFocusGained(evt);
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                GameDirFocusLost(evt);
+            }
+        });
+
+        GameDir_Open_btn.setBackground(new java.awt.Color(43, 206, 215));
         GameDir_Open_btn.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 GameDir_Open_btnMouseEntered(evt);
@@ -432,7 +576,7 @@ public final class GUI extends javax.swing.JFrame {
         });
 
         GameDir_Open_text.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
-        GameDir_Open_text.setForeground(new Color(239, 239, 239));
+        GameDir_Open_text.setForeground(new java.awt.Color(239, 239, 239));
         GameDir_Open_text.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         GameDir_Open_text.setText(bundle.getString("GUI.GameDir_Open_text.text")); // NOI18N
 
@@ -480,14 +624,24 @@ public final class GUI extends javax.swing.JFrame {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         Body.add(GameDirPane, gridBagConstraints);
 
-        JavaDirPane.setBackground(new Color(10, 24, 37));
-        JavaDirPane.setPreferredSize(new Dimension(350, 25));
+        JavaDirPane.setBackground(new java.awt.Color(10, 24, 37));
+        JavaDirPane.setPreferredSize(new java.awt.Dimension(350, 25));
 
         JavaDir_text.setFont(new java.awt.Font("Tahoma", 1, 16)); // NOI18N
-        JavaDir_text.setForeground(new Color(239, 239, 239));
+        JavaDir_text.setForeground(new java.awt.Color(239, 239, 239));
         JavaDir_text.setText(bundle.getString("GUI.JavaDir_text.text")); // NOI18N
 
-        JavaDir_Open_btn.setBackground(new Color(43, 206, 215));
+        JavaDir.setText(Config.config.javaPath);
+        JavaDir.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                JavaDirFocusGained(evt);
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                JavaDirFocusLost(evt);
+            }
+        });
+
+        JavaDir_Open_btn.setBackground(new java.awt.Color(43, 206, 215));
         JavaDir_Open_btn.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 JavaDir_Open_btnMouseEntered(evt);
@@ -501,7 +655,7 @@ public final class GUI extends javax.swing.JFrame {
         });
 
         JavaDir_Open_text.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
-        JavaDir_Open_text.setForeground(new Color(239, 239, 239));
+        JavaDir_Open_text.setForeground(new java.awt.Color(239, 239, 239));
         JavaDir_Open_text.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         JavaDir_Open_text.setText(bundle.getString("GUI.JavaDir_Open_text.text")); // NOI18N
 
@@ -549,12 +703,22 @@ public final class GUI extends javax.swing.JFrame {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         Body.add(JavaDirPane, gridBagConstraints);
 
-        JVMOpPane.setBackground(new Color(10, 24, 37));
-        JVMOpPane.setPreferredSize(new Dimension(350, 25));
+        JVMOpPane.setBackground(new java.awt.Color(10, 24, 37));
+        JVMOpPane.setPreferredSize(new java.awt.Dimension(350, 25));
 
         JVMOp_text.setFont(new java.awt.Font("Tahoma", 1, 16)); // NOI18N
-        JVMOp_text.setForeground(new Color(239, 239, 239));
+        JVMOp_text.setForeground(new java.awt.Color(239, 239, 239));
         JVMOp_text.setText(bundle.getString("GUI.JVMOp_text.text")); // NOI18N
+
+        JVMOp.setText(Config.config.JVMOp);
+        JVMOp.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                JVMOpFocusGained(evt);
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                JVMOpFocusLost(evt);
+            }
+        });
 
         javax.swing.GroupLayout JVMOpPaneLayout = new javax.swing.GroupLayout(JVMOpPane);
         JVMOpPane.setLayout(JVMOpPaneLayout);
@@ -585,10 +749,10 @@ public final class GUI extends javax.swing.JFrame {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         Body.add(JVMOpPane, gridBagConstraints);
 
-        BottomSettingPane.setBackground(new Color(57, 63, 70));
-        BottomSettingPane.setPreferredSize(new Dimension(0, 35));
+        BottomSettingPane.setBackground(new java.awt.Color(57, 63, 70));
+        BottomSettingPane.setPreferredSize(new java.awt.Dimension(0, 35));
 
-        Save_btn.setBackground(new Color(43, 206, 215));
+        Save_btn.setBackground(new java.awt.Color(43, 206, 215));
         Save_btn.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 Save_btnMouseEntered(evt);
@@ -602,7 +766,7 @@ public final class GUI extends javax.swing.JFrame {
         });
 
         save_text.setFont(new java.awt.Font("Tahoma", 1, 18)); // NOI18N
-        save_text.setForeground(new Color(239, 239, 239));
+        save_text.setForeground(new java.awt.Color(239, 239, 239));
         save_text.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         save_text.setText(bundle.getString("GUI.save_text.text")); // NOI18N
 
@@ -620,7 +784,7 @@ public final class GUI extends javax.swing.JFrame {
             .addComponent(save_text, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
-        Cansel_btn.setBackground(new Color(255, 115, 121));
+        Cansel_btn.setBackground(new java.awt.Color(255, 115, 121));
         Cansel_btn.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 Cansel_btnMouseEntered(evt);
@@ -634,7 +798,7 @@ public final class GUI extends javax.swing.JFrame {
         });
 
         cancel_text.setFont(new java.awt.Font("Tahoma", 1, 18)); // NOI18N
-        cancel_text.setForeground(new Color(239, 239, 239));
+        cancel_text.setForeground(new java.awt.Color(239, 239, 239));
         cancel_text.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         cancel_text.setText(bundle.getString("GUI.cancel_text.text")); // NOI18N
 
@@ -653,7 +817,7 @@ public final class GUI extends javax.swing.JFrame {
         );
 
         reset_btn.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
-        reset_btn.setForeground(new Color(239, 239, 239));
+        reset_btn.setForeground(new java.awt.Color(239, 239, 239));
         reset_btn.setText(bundle.getString("GUI.reset_btn.text")); // NOI18N
         reset_btn.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         reset_btn.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -697,7 +861,7 @@ public final class GUI extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(SettingPageLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(Setting_text, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(Body, javax.swing.GroupLayout.DEFAULT_SIZE, 0, Short.MAX_VALUE))
+                    .addComponent(Body, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addContainerGap())
             .addComponent(BottomSettingPane, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 634, Short.MAX_VALUE)
         );
@@ -715,12 +879,12 @@ public final class GUI extends javax.swing.JFrame {
 
         contentPane.add(SettingPage);
 
-        MainPage.setBackground(new Color(10, 24, 37));
+        MainPage.setBackground(new java.awt.Color(10, 24, 37));
 
-        BottomPane.setBackground(new Color(57, 63, 70));
+        BottomPane.setBackground(new java.awt.Color(57, 63, 70));
 
-        Play_btn.setBackground(new Color(43, 206, 215));
-        Play_btn.setBorder(javax.swing.BorderFactory.createLineBorder(new Color(0, 173, 181), 2));
+        Play_btn.setBackground(new java.awt.Color(43, 206, 215));
+        Play_btn.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 173, 181), 2));
         Play_btn.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 Play_btnMouseEntered(evt);
@@ -734,7 +898,7 @@ public final class GUI extends javax.swing.JFrame {
         });
 
         play_text.setFont(new java.awt.Font("Tahoma", 1, 36)); // NOI18N
-        play_text.setForeground(new Color(239, 239, 239));
+        play_text.setForeground(new java.awt.Color(239, 239, 239));
         play_text.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         play_text.setText(bundle.getString("GUI.play_text.text")); // NOI18N
 
@@ -753,7 +917,7 @@ public final class GUI extends javax.swing.JFrame {
         );
 
         userName_text.setFont(new java.awt.Font("Tahoma", 1, 16)); // NOI18N
-        userName_text.setForeground(new Color(239, 239, 239));
+        userName_text.setForeground(new java.awt.Color(239, 239, 239));
         userName_text.setText(bundle.getString("GUI.userName_text.text")); // NOI18N
 
         UserName.setText(bundle.getString("GUI.UserName.text")); // NOI18N
@@ -784,7 +948,7 @@ public final class GUI extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
-        ProgressBar.setBackground(new Color(26, 40, 53));
+        ProgressBar.setBackground(new java.awt.Color(26, 40, 53));
         ProgressBar.setValue(50);
         ProgressBar.setStringPainted(true);
 
@@ -877,7 +1041,11 @@ public final class GUI extends javax.swing.JFrame {
     }//GEN-LAST:event_About_btnMousePressed
 
     private void reset_btnMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_reset_btnMousePressed
-        System.out.println("reset_btn");
+        JavaDir.setText("");
+        GameDir.setText("");
+        JVMOp.setText("");
+        updateTextBox();
+        writeConfig();
     }//GEN-LAST:event_reset_btnMousePressed
 
     private void reset_btnMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_reset_btnMouseExited
@@ -889,7 +1057,11 @@ public final class GUI extends javax.swing.JFrame {
     }//GEN-LAST:event_reset_btnMouseEntered
 
     private void Cansel_btnMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Cansel_btnMousePressed
-        System.out.println("Cansel_btn");
+        Config.readConfig();
+        GameDir.setText(Config.config.gamePath);
+        JavaDir.setText(Config.config.javaPath);
+        JVMOp.setText(Config.config.JVMOp);
+        updateTextBox();
     }//GEN-LAST:event_Cansel_btnMousePressed
 
     private void Cansel_btnMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Cansel_btnMouseExited
@@ -901,7 +1073,7 @@ public final class GUI extends javax.swing.JFrame {
     }//GEN-LAST:event_Cansel_btnMouseEntered
 
     private void Save_btnMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Save_btnMousePressed
-        System.out.println("Save_btn");
+        writeConfig();
     }//GEN-LAST:event_Save_btnMousePressed
 
     private void Save_btnMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Save_btnMouseExited
@@ -916,8 +1088,11 @@ public final class GUI extends javax.swing.JFrame {
         final JFileChooser fc = new JFileChooser();
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fc.addChoosableFileFilter(new JavaFilter());
-        if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION)
-        JavaDir.setText(fc.getSelectedFile().toString());
+        if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            JavaDir.setText(fc.getSelectedFile().toString());
+            JavaDir.setForeground(Color.black);
+            JavaDir.requestFocus();
+        }
     }//GEN-LAST:event_JavaDir_Open_btnMousePressed
 
     private void JavaDir_Open_btnMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_JavaDir_Open_btnMouseExited
@@ -931,8 +1106,11 @@ public final class GUI extends javax.swing.JFrame {
     private void GameDir_Open_btnMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_GameDir_Open_btnMousePressed
         final JFileChooser fc = new JFileChooser();
         fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION)
-        GameDir.setText(fc.getSelectedFile().toString());
+        if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            GameDir.setText(fc.getSelectedFile().toString());
+            GameDir.setForeground(Color.black);
+            GameDir.requestFocus();
+        }
     }//GEN-LAST:event_GameDir_Open_btnMousePressed
 
     private void GameDir_Open_btnMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_GameDir_Open_btnMouseExited
@@ -955,18 +1133,54 @@ public final class GUI extends javax.swing.JFrame {
         Play_btn.setBackground(new Color(0, 173, 181));
     }//GEN-LAST:event_Play_btnMouseEntered
 
-    private void writeConfig() {
-        Config.config.gamePath = GameDir.getText();
-        Config.config.javaPath = JavaDir.getText();
-        Config.config.userName = UserName.getText();
-        Config.writeConfig();
-    }
+    private void GameDirFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_GameDirFocusGained
+        if (GameDir.getForeground().equals(Color.gray)) {
+            GameDir.setText("");
+            GameDir.setForeground(Color.black);
+        }
+    }//GEN-LAST:event_GameDirFocusGained
 
-    public void readConfig() {
-        Config.readConfig();
-        GameDir.setText(Config.config.gamePath);
-        JavaDir.setText(Config.config.javaPath);
-        UserName.setText(Config.config.userName);
+    private void GameDirFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_GameDirFocusLost
+        if (GameDir.getText().equals("")) {
+            GameDir.setText(bundle.getString("GUI.default"));
+            GameDir.setForeground(Color.gray);
+        }
+    }//GEN-LAST:event_GameDirFocusLost
+
+    private void JavaDirFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_JavaDirFocusGained
+        if (JavaDir.getForeground().equals(Color.gray)) {
+            JavaDir.setText("");
+            JavaDir.setForeground(Color.black);
+        }
+    }//GEN-LAST:event_JavaDirFocusGained
+
+    private void JavaDirFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_JavaDirFocusLost
+        if (JavaDir.getText().equals("")) {
+            JavaDir.setText(bundle.getString("GUI.default"));
+            JavaDir.setForeground(Color.gray);
+        }
+    }//GEN-LAST:event_JavaDirFocusLost
+
+    private void JVMOpFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_JVMOpFocusGained
+        if (JVMOp.getForeground().equals(Color.gray)) {
+            JVMOp.setText("");
+            JVMOp.setForeground(Color.black);
+        }
+    }//GEN-LAST:event_JVMOpFocusGained
+
+    private void JVMOpFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_JVMOpFocusLost
+        if (JVMOp.getText().equals("")) {
+            JVMOp.setText(bundle.getString("GUI.default"));
+            JVMOp.setForeground(Color.gray);
+        }
+    }//GEN-LAST:event_JVMOpFocusLost
+
+    private void writeConfig() {
+        Config.config.gamePath = GameDir.getForeground().equals(Color.gray) ? "" : GameDir.getText();
+        Config.config.javaPath = JavaDir.getForeground().equals(Color.gray) ? "" : JavaDir.getText();
+        Config.config.userName = UserName.getText();
+        Config.config.JVMOp = JVMOp.getForeground().equals(Color.gray) ? "" : JVMOp.getText();
+        Config.writeConfig();
     }
 
     private void updatePage(final int page) {
@@ -976,13 +1190,21 @@ public final class GUI extends javax.swing.JFrame {
         MainPage.setVisible(page == 0);
         SettingPage.setVisible(page == 1);
         LanguagePage.setVisible(page == 2);
+        updateTextBox();
+    }
+
+    private void updateTextBox() {
+        GameDirFocusLost(null);
+        JavaDirFocusLost(null);
+        JVMOpFocusLost(null);
+        getContentPane().requestFocusInWindow();
     }
 
     public static void main(String args[]) {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
-            Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
+            log.error("Fail set look and feel", ex);
         }
         java.awt.EventQueue.invokeLater(() -> {
             new GUI().setVisible(true);
@@ -991,55 +1213,55 @@ public final class GUI extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel About_btn;
-    private JPanel Body;
-    private JPanel BottomPane;
-    private JPanel BottomSettingPane;
-    private JPanel Cansel_btn;
+    private javax.swing.JPanel Body;
+    private javax.swing.JPanel BottomPane;
+    private javax.swing.JPanel BottomSettingPane;
+    private javax.swing.JPanel Cansel_btn;
     private javax.swing.JTextField GameDir;
-    private JPanel GameDirPane;
-    private JPanel GameDir_Open_btn;
+    private javax.swing.JPanel GameDirPane;
+    private javax.swing.JPanel GameDir_Open_btn;
     private javax.swing.JLabel GameDir_Open_text;
     private javax.swing.JLabel GameDir_text;
     private javax.swing.JLabel Image;
     private javax.swing.JTextField JVMOp;
-    private JPanel JVMOpPane;
+    private javax.swing.JPanel JVMOpPane;
     private javax.swing.JLabel JVMOp_text;
     private javax.swing.JTextField JavaDir;
-    private JPanel JavaDirPane;
-    private JPanel JavaDir_Open_btn;
+    private javax.swing.JPanel JavaDirPane;
+    private javax.swing.JPanel JavaDir_Open_btn;
     private javax.swing.JLabel JavaDir_Open_text;
     private javax.swing.JLabel JavaDir_text;
-    private JPanel LanguagePage;
+    private javax.swing.JPanel LanguagePage;
     private javax.swing.JLabel Language_Text;
-    private JPanel Language_btn;
+    private javax.swing.JPanel Language_btn;
     private javax.swing.JLabel Language_text;
-    private JPanel MainPage;
-    private JPanel Play_btn;
+    private javax.swing.JPanel MainPage;
+    private javax.swing.JPanel Play_btn;
     private javax.swing.JProgressBar ProgressBar;
     private javax.swing.JLabel RogueGoing_Text;
-    private JPanel RogueGoing_btn;
-    private JPanel RogueGoung_select;
-    private JPanel Save_btn;
-    private JPanel SettingPage;
-    private JPanel Setting_btn;
+    private javax.swing.JPanel RogueGoing_btn;
+    private javax.swing.JPanel RogueGoung_select;
+    private javax.swing.JPanel Save_btn;
+    private javax.swing.JPanel SettingPage;
+    private javax.swing.JPanel Setting_btn;
     private javax.swing.JLabel Setting_text;
     private javax.swing.JTextField UserName;
     private javax.swing.JLabel cancel_text;
-    private JPanel contentPane;
-    private JPanel language_pane;
+    private javax.swing.JPanel contentPane;
+    private javax.swing.JPanel language_pane;
     private javax.swing.JScrollPane language_scroll;
-    private JPanel language_select;
-    private JPanel line_language;
-    private JPanel line_logo;
-    private JPanel line_logo2;
-    private JPanel line_setting;
+    private javax.swing.JPanel language_select;
+    private javax.swing.JPanel line_language;
+    private javax.swing.JPanel line_logo;
+    private javax.swing.JPanel line_logo2;
+    private javax.swing.JPanel line_setting;
     private javax.swing.JLabel logo;
     private javax.swing.JLabel play_text;
     private javax.swing.JLabel reset_btn;
     private javax.swing.JLabel save_text;
     private javax.swing.JLabel setting_Text;
-    private JPanel setting_select;
-    private JPanel toolBar;
+    private javax.swing.JPanel setting_select;
+    private javax.swing.JPanel toolBar;
     private javax.swing.JLabel userName_text;
     // End of variables declaration//GEN-END:variables
 }
