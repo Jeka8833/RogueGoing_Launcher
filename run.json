@@ -1,0 +1,138 @@
+{
+    "windowsRun": "%java% --enable-preview %option% -cp \"%path%\\RogueGoing.jar;%path%\\lib\\lwjgl\\* com.Jeka8833.RogueGoing.Main -path \"%path%\" -user %user%\"",
+    "linuxRun": "'%java%' --enable-preview %option% -cp \"%path%/RogueGoing.jar:%path%/lib/lwjgl/*\" com.Jeka8833.RogueGoing.Main -path '%path%' -user %user%",
+    "linux": {
+        "x64": [{
+                "url": "https://github.com/Jeka8833/RogueGoing_File_Server/releases/download/JREAndLib/jre-13.0.1-linux-64.zip",
+                "hash": {
+                    "/jre/": "88787cd2c2f1b9ea39261f9289c6649b"
+                }
+            }, {
+                "url": "https://github.com/Jeka8833/RogueGoing_File_Server/releases/download/JREAndLib/lib-linux-64.zip",
+                "hash": {
+                    "/lib/lwjgl/lwjgl-glfw-natives-linux-arm64.jar": "65bda0b57f3114c9ba8c314bbe3891f9",
+                    "/lib/lwjgl/lwjgl-glfw-natives-linux.jar": "c16a72a82c9e76aae25f6bee2684af62",
+                    "/lib/lwjgl/lwjgl-natives-linux-arm64.jar": "c5d3f9f187c8dcbb052f07ff0c4d586a",
+                    "/lib/lwjgl/lwjgl-natives-linux.jar": "7cbdb5fb9cc587f457772a437a5b7a2e",
+                    "/lib/lwjgl/lwjgl-openal-natives-linux-arm64.jar": "1f8bd1d0fb03a7c8f93f06583569bc41",
+                    "/lib/lwjgl/lwjgl-openal-natives-linux.jar": "53e0c3c4c0357fae4be1421473762afa",
+                    "/lib/lwjgl/lwjgl-opengl-natives-linux-arm64.jar": "b4e483355563d47ceaa822b1c95fcc26",
+                    "/lib/lwjgl/lwjgl-opengl-natives-linux.jar": "3e9c67ac59f8248d35521e36a7c59583",
+                    "/lib/lwjgl/lwjgl-stb-natives-linux-arm64.jar": "d1a9531a818014bd04f5def6bdeb2c6e",
+                    "/lib/lwjgl/lwjgl-stb-natives-linux.jar": "5db907f8ddf011789409ef9cfeeb4382"
+                }
+            }
+        ],
+        "x32": [{
+                "url": "https://github.com/Jeka8833/RogueGoing_File_Server/releases/download/JREAndLib/jre-13.0.1-linux-32.zip",
+                "hash": {
+                    "/jre/": "991704dab5d33ee342be5ea14a45e282"
+                }
+            }, {
+                "url": "https://github.com/Jeka8833/RogueGoing_File_Server/releases/download/JREAndLib/lib-linux-32.zip",
+                "hash": {
+                    "/lib/lwjgl/lwjgl-glfw-natives-linux-arm32.jar": "18253b38766aa96ed77b630006cfc0a7",
+                    "/lib/lwjgl/lwjgl-glfw-natives-linux.jar": "c16a72a82c9e76aae25f6bee2684af62",
+                    "/lib/lwjgl/lwjgl-natives-linux-arm32.jar": "7e2619cd8791b856784eb5666ed65b16",
+                    "/lib/lwjgl/lwjgl-natives-linux.jar": "7cbdb5fb9cc587f457772a437a5b7a2e",
+                    "/lib/lwjgl/lwjgl-openal-natives-linux-arm32.jar": "b286b0070041610042e5611d549a7998",
+                    "/lib/lwjgl/lwjgl-openal-natives-linux.jar": "53e0c3c4c0357fae4be1421473762afa",
+                    "/lib/lwjgl/lwjgl-opengl-natives-linux-arm32.jar": "4abf462df040ac0e7a95c064041b797c",
+                    "/lib/lwjgl/lwjgl-opengl-natives-linux.jar": "3e9c67ac59f8248d35521e36a7c59583",
+                    "/lib/lwjgl/lwjgl-stb-natives-linux-arm32.jar": "67a3c38cfa9528d7cbc9a4215f69c8a1",
+                    "/lib/lwjgl/lwjgl-stb-natives-linux.jar": "5db907f8ddf011789409ef9cfeeb4382"
+                }
+            }
+        ]
+    },
+    "macos": {
+        "x64": [{
+                "url": "https://github.com/Jeka8833/RogueGoing_File_Server/releases/download/JREAndLib/jre-13.0.1-macOS-64.zip",
+                "hash": {
+                    "/jre/": "996ba76d91ccee7ca41ce67fdc7527c1"
+                }
+            }, {
+                "url": "https://github.com/Jeka8833/RogueGoing_File_Server/releases/download/JREAndLib/lib-macos-64.zip",
+                "hash": {
+                    "/lib/lwjgl/lwjgl-glfw-natives-macos.jar": "dab3f9d1b1f2f5dfe9581af76945a790",
+                    "/lib/lwjgl/lwjgl-natives-macos.jar": "68c6b65b4110d6fc5fd62694cee6a5a8",
+                    "/lib/lwjgl/lwjgl-openal-natives-macos.jar": "50a8341e317baf7b97808405d640a586",
+                    "/lib/lwjgl/lwjgl-opengl-natives-macos.jar": "6374af6abea843ca49ba59a3d888bed9",
+                    "/lib/lwjgl/lwjgl-stb-natives-macos.jar": "fcb2767274b5b18ad3f1fb4433d3d31d"
+                }
+            }
+        ]
+    },
+    "windows": {
+        "x64": [{
+                "url": "https://github.com/Jeka8833/RogueGoing_File_Server/releases/download/JREAndLib/jre-13.0.1-windows-64.zip",
+                "hash": {
+                    "\\jre\\": "79243826921fc72e46f33f765c61eda7"
+                }
+            }, {
+                "url": "https://github.com/Jeka8833/RogueGoing_File_Server/releases/download/JREAndLib/lib-windows-64.zip",
+                "hash": {
+                    "\\lib\\lwjgl\\lwjgl-glfw-natives-windows.jar": "2f56f5ee15289541a23b21f63326e607",
+                    "\\lib\\lwjgl\\lwjgl-natives-windows.jar": "615087a956d699b759770e6774df77d3",
+                    "\\lib\\lwjgl\\lwjgl-openal-natives-windows.jar": "736cb12c3fc79211063560893da31eb1",
+                    "\\lib\\lwjgl\\lwjgl-opengl-natives-windows.jar": "42f00bcb37596c264ac44f3b4c2df4d7",
+                    "\\lib\\lwjgl\\lwjgl-stb-natives-windows.jar": "3e50bac3bbece37e0b7e227b4979cea2"
+                }
+            }
+        ],
+        "x32": [{
+                "url": "https://github.com/Jeka8833/RogueGoing_File_Server/releases/download/JREAndLib/jre-13.0.1-windows-32.zip",
+                "hash": {
+                    "\\jre\\": "a4694145ca9648c8557d2a87681c3515"
+                }
+            }, {
+                "url": "https://github.com/Jeka8833/RogueGoing_File_Server/releases/download/JREAndLib/lib-windows-32.zip",
+                "hash": {
+                    "\\lib\\lwjgl\\lwjgl-glfw-natives-windows-x86.jar": "fcf122120f4cb70a0acff5884fa3fbeb",
+                    "\\lib\\lwjgl\\lwjgl-natives-windows-x86.jar": "18a7699f66bc960e6f76dfb0f3cb8c3d",
+                    "\\lib\\lwjgl\\lwjgl-openal-natives-windows-x86.jar": "3e00c852a40f56a3321c4e0c3edf838a",
+                    "\\lib\\lwjgl\\lwjgl-opengl-natives-windows-x86.jar": "0b59528baccf9097a05ca57138042619",
+                    "\\lib\\lwjgl\\lwjgl-stb-natives-windows-x86.jar": "fbd91499ccf9070f46b01d0ac3b57a61"
+                }
+            }
+        ]
+    },
+    "files": [{
+            "url": "https://github.com/Jeka8833/RogueGoing_File_Server/releases/download/Main/RogueGoing.zip",
+            "hash": {
+                "/asset/music/background/theme-1.ogg": "6d7f77404b06c9bef5ec5ddde7fabdb8",
+                "/asset/music/background/theme-10.ogg": "ac23f1ae1da0f9c83219a47d4830b87e",
+                "/asset/music/background/theme-11.ogg": "1097bff3a51c8dbd3a0c4888ec5a7f6d",
+                "/asset/music/background/theme-12.ogg": "a4e766bf11f4f975af058712e173245b",
+                "/asset/music/background/theme-13.ogg": "355c4bdbfb187f0b414607de6105915d",
+                "/asset/music/background/theme-14.ogg": "8c853f7c2245e8e8a683e21e1e5de1b3",
+                "/asset/music/background/theme-15.ogg": "8dcc80ad7e9e6e413ade2cf9f98ca867",
+                "/asset/music/background/theme-16.ogg": "f1bea0ba800445184eb4201d22816ba8",
+                "/asset/music/background/theme-17.ogg": "b06f072d14c7e828eb317fe88f3040a1",
+                "/asset/music/background/theme-18.ogg": "b489325f34ad42a9311c4d40dd84facc",
+                "/asset/music/background/theme-2.ogg": "1c2b3c64031f93f7d54dc932d18e9061",
+                "/asset/music/background/theme-3.ogg": "87e17197553fdd1fa89ab0e757534d85",
+                "/asset/music/background/theme-4.ogg": "c9cbe551e2513abd7e156bef36a4e75a",
+                "/asset/music/background/theme-5.ogg": "1e178c12bf80de02e5834cc3661b2143",
+                "/asset/music/background/theme-6-short.ogg": "34089df9660626c87771958b01a69e88",
+                "/asset/music/background/theme-6.ogg": "0ddadb29da4538d48f1161f413de4375",
+                "/asset/music/background/theme-7.ogg": "5e044b13ad1c350775c37e4ee9a5e4fe",
+                "/asset/music/background/theme-8.ogg": "8100455a7eaa2db87a088e1c2e8c84c3",
+                "/asset/music/background/theme-9.ogg": "cdcf2a2c7fac41764e51c438010a1ae9",
+                "/asset/music/list.json": "92f89b3c243527c4bd89395e51d3c4c8",
+                "/lib/lwjgl/lwjgl-glfw.jar": "43f9a070542b6786d0a5f6c677075514",
+                "/lib/lwjgl/lwjgl-openal.jar": "99a2d08628808bfa879572bda9f54fda",
+                "/lib/lwjgl/lwjgl-opengl.jar": "4c24c17ca8c276b4ad5c234a3843c259",
+                "/lib/lwjgl/lwjgl-stb.jar": "f64079b6d9a8ce829cd73ef3f88dd204",
+                "/lib/lwjgl/lwjgl.jar": "91bb68719ea3a30f570f62c74911a104",
+                "/RogueGoing.jar": "5a018ebe713f58de991830e7842b7fa0",
+                "/world/jd-gui-1.4.0.jar": "f07fe2c73b658f2dae4d659ded6b8f5c",
+                "/world/RealTestMap.jar": "39195db7599205fd9a3d6fee66252970",
+                "/world/saves/Real_Test_Map_save/info.json": "d044c23bbbb14f3f59b2068f430e7787",
+                "/world/saves/Real_Test_Map_save/LastScreen.png": "e2acc06c586183a838360c7d9d7b4f67",
+                "/world/saves/Test-save/info.json": "bec24a7a793aa3d4e8c9751790072afe",
+                "/world/saves/Test-save/LastScreen.png": "47eb925e54b8799a4f5d3c5fd0e547be"
+            }
+        }
+    ]
+}

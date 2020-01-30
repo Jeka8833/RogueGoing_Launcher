@@ -1237,7 +1237,7 @@ public final class GUI extends javax.swing.JFrame {
     private javax.swing.JLabel Language_text;
     private javax.swing.JPanel MainPage;
     private javax.swing.JPanel Play_btn;
-    private javax.swing.JProgressBar ProgressBar;
+    public javax.swing.JProgressBar ProgressBar;
     private javax.swing.JLabel RogueGoing_Text;
     private javax.swing.JPanel RogueGoing_btn;
     private javax.swing.JPanel RogueGoung_select;
