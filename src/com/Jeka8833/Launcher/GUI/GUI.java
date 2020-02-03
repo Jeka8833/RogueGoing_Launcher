@@ -1122,7 +1122,8 @@ public final class GUI extends javax.swing.JFrame {
     }//GEN-LAST:event_GameDir_Open_btnMouseEntered
 
     private void Play_btnMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Play_btnMousePressed
-        new FileUpdate(this).start();
+        writeConfig();
+        FileUpdate.checkAndRun(this);
     }//GEN-LAST:event_Play_btnMousePressed
 
     private void Play_btnMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Play_btnMouseExited

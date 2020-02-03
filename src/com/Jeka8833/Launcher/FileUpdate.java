@@ -16,73 +16,61 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
-public class FileUpdate implements Runnable {
+public class FileUpdate {
 
     private static final Logger log = LogManager.getLogger(FileUpdate.class);
 
-    private final GUI form;
+    private static GUI form;
 
-    public FileUpdate(GUI form) {
-        this.form = form;
-    }
+    public static void checkAndRun(final GUI form) {
+        FileUpdate.form = form;
+        new Thread(() -> {
+            form.ProgressBar.setVisible(true);
+            form.ProgressBar.setIndeterminate(true);
+            form.ProgressBar.setString("Downloading file list");
 
-    @Override
-    public void run() {
-        form.ProgressBar.setVisible(true);
-        form.ProgressBar.setIndeterminate(true);
-        form.ProgressBar.setString("Downloading file list");
-
-        final Path path = Paths.get(Config.getGamePath()).resolve("run.json");
-        if(WebConnect.internetConnection) {
-            try {
-                WebConnect.downloadFile(WebConnect.url, path);
-            } catch (IOException e) {
-                log.warn("Connection fail", e);
-            }
-        }
-        if (!Files.isRegularFile(path)) {
-            form.ProgressBar.setString("File check error");
-            closeBar(form);
-            return;
-        }
-
-        List<HashInfo> hashInfos;
-        FileConst run;
-        try {
-            hashInfos = getFileList(run = new Gson().fromJson(new String(Files.readAllBytes(path)), FileConst.class));
-        } catch (IOException | NullPointerException e) {
-            form.ProgressBar.setString("File parse error");
-            closeBar(form);
-            return;
-        }
-        form.ProgressBar.setIndeterminate(false);
-        form.ProgressBar.setMaximum(hashInfos.size());
-        form.ProgressBar.setValue(0);
-        for (HashInfo hashInfo : hashInfos) {
-            if (!checkFiles(hashInfo.hash)) {
-                form.ProgressBar.setString("Download: " + hashInfo.url);
-                if(WebConnect.internetConnection) {
-                    try {
-                        WebConnect.downloadAndExtract(hashInfo.url, Config.getGamePath());
-                    } catch (IOException e) {
-                        log.error("Download error", e);
-                    }
-                } else {
-                    form.ProgressBar.setString("No internet connection");
-                    closeBar(form);
-                    return;
+            final Path path = Paths.get(Config.getGamePath()).resolve("run.json");
+            if (WebConnect.internetConnection) {
+                try {
+                    WebConnect.downloadFile(WebConnect.url, path);
+                } catch (IOException e) {
+                    log.warn("Connection fail", e);
                 }
             }
-            form.ProgressBar.setValue(form.ProgressBar.getValue() + 1);
-        }
-        form.ProgressBar.setString("Run game");
-        try {
-            rumGame(Util.getOS(), run);
-            System.exit(0);
-        } catch (IOException e) {
-            form.ProgressBar.setString("Fail run game");
-            closeBar(form);
-        }
+            if (!Files.isRegularFile(path)) {
+                closeBar("File check error");
+                return;
+            }
+
+            List<HashInfo> hashInfos;
+            FileConst run;
+            try {
+                hashInfos = getFileList(run = new Gson().fromJson(new String(Files.readAllBytes(path)), FileConst.class));
+            } catch (IOException | NullPointerException e) {
+                closeBar("File parse error");
+                return;
+            }
+            form.ProgressBar.setIndeterminate(false);
+            form.ProgressBar.setMaximum(hashInfos.size());
+            form.ProgressBar.setValue(0);
+            for (HashInfo hashInfo : hashInfos) {
+                if (!checkFiles(hashInfo.hash)) {
+                    form.ProgressBar.setString("Download: " + hashInfo.url);
+                    if (WebConnect.internetConnection) {
+                        try {
+                            WebConnect.downloadAndExtract(hashInfo.url, Config.getGamePath());
+                        } catch (IOException e) {
+                            log.error("Download error", e);
+                        }
+                    } else {
+                        closeBar("No internet connection");
+                        return;
+                    }
+                }
+                form.ProgressBar.setValue(form.ProgressBar.getValue() + 1);
+            }
+            runGame(run);
+        }).start();
     }
 
     @NotNull
@@ -126,7 +114,7 @@ public class FileUpdate implements Runnable {
         return hashInfos;
     }
 
-    private boolean checkFiles(@NotNull final Map<String, String> files) {
+    private static boolean checkFiles(@NotNull final Map<String, String> files) {
         final String path = Config.getGamePath();
         for (Map.Entry<String, String> file : files.entrySet()) {
             final Path filePath = Paths.get(path + file.getKey());
@@ -150,40 +138,43 @@ public class FileUpdate implements Runnable {
         return true;
     }
 
-    private static void rumGame(@NotNull final Util.OS os, final FileConst run) throws IOException, NullPointerException {
-        switch (os) {
-            case WINDOWS:
-                final String javaw = Config.config.javaPath.isEmpty() ? Config.getGamePath() + "\\jre\\bin\\javaw.exe" : Config.config.javaPath;
-                Runtime.getRuntime().exec(run.windowsRun.replace("%java%", javaw)
-                        .replace("%option%", Config.config.JVMOp).replace("%path%", Config.getGamePath())
-                        .replace("%user%", Config.config.userName).split(" "));
-                break;
-            case LINUX:
-            case MAC:
-                final String java = Config.config.javaPath.isEmpty() ? Config.getGamePath() + "/jre/bin/java" : Config.config.javaPath;
-                Runtime.getRuntime().exec(run.linuxRun.replace("%java%", java)
-                        .replace("%option%", Config.config.JVMOp).replace("%path%", Config.getGamePath())
-                        .replace("%user%", Config.config.userName).split(" "));
-                break;
-            default:
-                throw new NullPointerException("Unknown Os");
+    private static void runGame(final FileConst run) {
+        form.ProgressBar.setString("Run game");
+        try {
+            switch (Util.getOS()) {
+                case WINDOWS:
+                    Runtime.getRuntime().exec(run.windowsRun.replace("%java%", Config.getJavaPath())
+                            .replace("%option%", Config.config.JVMOp).replace("%path%", Config.getGamePath())
+                            .replace("%user%", Config.config.userName).split(" "));
+                    break;
+                case MAC:
+                    Runtime.getRuntime().exec(run.macosRun.replace("%java%", Config.getJavaPath())
+                            .replace("%option%", Config.config.JVMOp).replace("%path%", Config.getGamePath())
+                            .replace("%user%", Config.config.userName).split(" "));
+                    break;
+                case LINUX:
+                    Runtime.getRuntime().exec(run.linuxRun.replace("%java%", Config.getJavaPath())
+                            .replace("%option%", Config.config.JVMOp).replace("%path%", Config.getGamePath())
+                            .replace("%user%", Config.config.userName).split(" "));
+                    break;
+                default:
+                    throw new NullPointerException("Unknown OS");
+            }
+            System.exit(0);
+        } catch (IOException | NullPointerException e) {
+            closeBar("Fail run game");
         }
     }
 
-    private static void closeBar(@NotNull final GUI form){
+    private static void closeBar(final String text) {
         form.ProgressBar.setIndeterminate(false);
+        form.ProgressBar.setString(text);
         form.ProgressBar.setValue(0);
         try {
-            Thread.sleep(3000);
+            Thread.sleep(5000);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            log.error("Thread sleep error", e);
         }
         form.ProgressBar.setVisible(false);
-    }
-
-    public Thread start() {
-        final Thread th = new Thread(this);
-        th.start();
-        return th;
     }
 }
