@@ -8,13 +8,16 @@ import java.nio.channels.Channels;
 import java.nio.file.Path;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class WebConnect {
-    
+
     private static final Logger log = LogManager.getLogger(WebConnect.class);
-    
+
+    public static boolean internetConnection = true;
+
     public static final String version = "https://github.com/Jeka8833/RogueGoing_File_Server/releases/download/Launcher/version.txt";
     public static final String url = "https://github.com/Jeka8833/RogueGoing_File_Server/releases/download/Main/run.json";
     public static final String language = "https://github.com/Jeka8833/RogueGoing_File_Server/releases/download/Language/list.json";

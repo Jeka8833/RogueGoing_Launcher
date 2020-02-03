@@ -31,49 +31,57 @@ public class FileUpdate implements Runnable {
         form.ProgressBar.setVisible(true);
         form.ProgressBar.setIndeterminate(true);
         form.ProgressBar.setString("Downloading file list");
+
         final Path path = Paths.get(Config.getGamePath()).resolve("run.json");
-        try {
-            WebConnect.downloadFile(WebConnect.url, path);
-        } catch (IOException e) {
-            log.warn("Connection fail", e);
+        if(WebConnect.internetConnection) {
+            try {
+                WebConnect.downloadFile(WebConnect.url, path);
+            } catch (IOException e) {
+                log.warn("Connection fail", e);
+            }
         }
         if (!Files.isRegularFile(path)) {
-            log.error("Hash file not found");
             form.ProgressBar.setString("File check error");
-            form.ProgressBar.setIndeterminate(false);
-            try {
-                Thread.sleep(3000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            form.ProgressBar.setVisible(false);
+            closeBar(form);
             return;
         }
-        FileConst run = null;
+
+        List<HashInfo> hashInfos;
+        FileConst run;
         try {
-            run = new Gson().fromJson(new String(Files.readAllBytes(path)), FileConst.class);
-        } catch (IOException e) {
-            log.error("File parse error", e);
+            hashInfos = getFileList(run = new Gson().fromJson(new String(Files.readAllBytes(path)), FileConst.class));
+        } catch (IOException | NullPointerException e) {
+            form.ProgressBar.setString("File parse error");
+            closeBar(form);
+            return;
         }
-        final List<HashInfo> hashInfos = getFileList(run);
+        form.ProgressBar.setIndeterminate(false);
         form.ProgressBar.setMaximum(hashInfos.size());
-        for (HashInfo hashInfo : hashInfos)
+        form.ProgressBar.setValue(0);
+        for (HashInfo hashInfo : hashInfos) {
             if (!checkFiles(hashInfo.hash)) {
                 form.ProgressBar.setString("Download: " + hashInfo.url);
-                try {
-                    WebConnect.downloadAndExtract(hashInfo.url, Config.getGamePath());
-                } catch (IOException e) {
-                    log.error("Download error", e);
+                if(WebConnect.internetConnection) {
+                    try {
+                        WebConnect.downloadAndExtract(hashInfo.url, Config.getGamePath());
+                    } catch (IOException e) {
+                        log.error("Download error", e);
+                    }
+                } else {
+                    form.ProgressBar.setString("No internet connection");
+                    closeBar(form);
+                    return;
                 }
             }
-        form.ProgressBar.setValue(form.ProgressBar.getValue() + 1);
+            form.ProgressBar.setValue(form.ProgressBar.getValue() + 1);
+        }
         form.ProgressBar.setString("Run game");
         try {
             rumGame(Util.getOS(), run);
             System.exit(0);
         } catch (IOException e) {
-            log.error("Fail run game", e);
             form.ProgressBar.setString("Fail run game");
+            closeBar(form);
         }
     }
 
@@ -142,7 +150,7 @@ public class FileUpdate implements Runnable {
         return true;
     }
 
-    private static void rumGame(@NotNull Util.OS os, FileConst run) throws IOException, NullPointerException {
+    private static void rumGame(@NotNull final Util.OS os, final FileConst run) throws IOException, NullPointerException {
         switch (os) {
             case WINDOWS:
                 final String javaw = Config.config.javaPath.isEmpty() ? Config.getGamePath() + "\\jre\\bin\\javaw.exe" : Config.config.javaPath;
@@ -160,6 +168,17 @@ public class FileUpdate implements Runnable {
             default:
                 throw new NullPointerException("Unknown Os");
         }
+    }
+
+    private static void closeBar(@NotNull final GUI form){
+        form.ProgressBar.setIndeterminate(false);
+        form.ProgressBar.setValue(0);
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        form.ProgressBar.setVisible(false);
     }
 
     public Thread start() {

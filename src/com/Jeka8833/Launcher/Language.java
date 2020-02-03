@@ -79,7 +79,7 @@ public class Language implements Comparable<Language> {
                 }
             }
         } catch (IOException ex) {
-            log.error("Path error", ex);
+            log.warn("Path error", ex);
         }
     }
 
@@ -87,7 +87,8 @@ public class Language implements Comparable<Language> {
         try {
             Collections.addAll(lang, new Gson().fromJson(WebConnect.getString(WebConnect.language), Language[].class));
         } catch (Exception ex) {
-            log.error("Parse fail", ex);
+            WebConnect.internetConnection = false;
+            log.warn("Parse fail", ex);
         }
         getLanguages();
         Collections.sort(lang);
