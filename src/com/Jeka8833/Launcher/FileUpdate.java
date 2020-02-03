@@ -14,10 +14,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class FileUpdate implements Runnable {
 
@@ -52,15 +49,31 @@ public class FileUpdate implements Runnable {
             form.ProgressBar.setVisible(false);
             return;
         }
+        FileConst run = null;
         try {
-            final List<HashInfo> hashInfos = getFileList(new Gson().fromJson(new String(Files.readAllBytes(path)), FileConst.class));
-            for (HashInfo hashInfo : hashInfos)
-                if (!checkFiles(hashInfo.hash)) {
-                    form.ProgressBar.setString("Download: " + hashInfo.url);
-                    WebConnect.downloadAndExtract(hashInfo.url, Config.getGamePath());
-                }
-        } catch (Exception e) {
+            run = new Gson().fromJson(new String(Files.readAllBytes(path)), FileConst.class);
+        } catch (IOException e) {
             log.error("File parse error", e);
+        }
+        final List<HashInfo> hashInfos = getFileList(run);
+        form.ProgressBar.setMaximum(hashInfos.size());
+        for (HashInfo hashInfo : hashInfos)
+            if (!checkFiles(hashInfo.hash)) {
+                form.ProgressBar.setString("Download: " + hashInfo.url);
+                try {
+                    WebConnect.downloadAndExtract(hashInfo.url, Config.getGamePath());
+                } catch (IOException e) {
+                    log.error("Download error", e);
+                }
+            }
+        form.ProgressBar.setValue(form.ProgressBar.getValue() + 1);
+        form.ProgressBar.setString("Run game");
+        try {
+            rumGame(Util.getOS(), run);
+            System.exit(0);
+        } catch (IOException e) {
+            log.error("Fail run game", e);
+            form.ProgressBar.setString("Fail run game");
         }
     }
 
@@ -111,12 +124,42 @@ public class FileUpdate implements Runnable {
             final Path filePath = Paths.get(path + file.getKey());
             form.ProgressBar.setString("Check file: " + file.getKey());
             if (file.getKey().endsWith("\\")) {
-                if (!Files.isDirectory(filePath) || !Objects.requireNonNull(Hash.getHashFolder(filePath)).equals(file.getValue()))
+                if (!Files.isDirectory(filePath) || !Objects.requireNonNull(Hash.getHashFolder(filePath)).equals(file.getValue())) {
+                    log.info("Folder " + filePath.toString() + " deleted");
+                    try {
+                        Files.walk(filePath)
+                                .sorted(Comparator.reverseOrder())
+                                .map(Path::toFile)
+                                .forEach(File::delete);
+                    } catch (IOException e) {
+                        log.error("File delete error", e);
+                    }
                     return false;
+                }
             } else if (!Files.isRegularFile(filePath) || !Objects.equals(Hash.getHashFile(filePath), file.getValue()))
                 return false;
         }
         return true;
+    }
+
+    private static void rumGame(@NotNull Util.OS os, FileConst run) throws IOException, NullPointerException {
+        switch (os) {
+            case WINDOWS:
+                final String javaw = Config.config.javaPath.isEmpty() ? Config.getGamePath() + "\\jre\\bin\\javaw.exe" : Config.config.javaPath;
+                Runtime.getRuntime().exec(run.windowsRun.replace("%java%", javaw)
+                        .replace("%option%", Config.config.JVMOp).replace("%path%", Config.getGamePath())
+                        .replace("%user%", Config.config.userName).split(" "));
+                break;
+            case LINUX:
+            case MAC:
+                final String java = Config.config.javaPath.isEmpty() ? Config.getGamePath() + "/jre/bin/java" : Config.config.javaPath;
+                Runtime.getRuntime().exec(run.linuxRun.replace("%java%", java)
+                        .replace("%option%", Config.config.JVMOp).replace("%path%", Config.getGamePath())
+                        .replace("%user%", Config.config.userName).split(" "));
+                break;
+            default:
+                throw new NullPointerException("Unknown Os");
+        }
     }
 
     public Thread start() {

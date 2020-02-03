@@ -6,6 +6,7 @@ public class FileConst {
 
     public String windowsRun;
     public String linuxRun;
+    public String macosRun;
 
     public Windows windows;
     public MacOS macos;
