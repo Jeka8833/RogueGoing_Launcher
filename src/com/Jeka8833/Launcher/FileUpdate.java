@@ -58,7 +58,7 @@ public class FileUpdate {
                     form.ProgressBar.setString("Download: " + hashInfo.url);
                     if (WebConnect.internetConnection) {
                         try {
-                            WebConnect.downloadAndExtract(hashInfo.url, Config.getGamePath());
+                            WebConnect.downloadAndExtract(hashInfo.url, Config.getGamePath(), hashInfo.rename);
                         } catch (IOException e) {
                             log.error("Download error", e);
                         }
@@ -110,29 +110,30 @@ public class FileUpdate {
         hashInfos.addAll(file.files);
         for (Language lang : Language.lang)
             if (Config.config.language.equals(lang.name) && !lang.url.isEmpty())
-                hashInfos.add(new HashInfo(lang.url, lang.hashs));
+                hashInfos.add(new HashInfo(lang.url, "", lang.hashs));
         return hashInfos;
     }
 
-    private static boolean checkFiles(@NotNull final Map<String, String> files) {
+    private static boolean checkFiles(@NotNull final Map<String, Integer> files) {
         final String path = Config.getGamePath();
-        for (Map.Entry<String, String> file : files.entrySet()) {
+        for (Map.Entry<String, Integer> file : files.entrySet()) {
             final Path filePath = Paths.get(path + file.getKey());
             form.ProgressBar.setString("Check file: " + file.getKey());
             if (file.getKey().endsWith("\\")) {
-                if (!Files.isDirectory(filePath) || !Objects.requireNonNull(Hash.getHashFolder(filePath)).equals(file.getValue())) {
+                if (!Files.isDirectory(filePath) || Hash.getHashFolder(filePath) != file.getValue()) {
                     log.info("Folder " + filePath.toString() + " deleted");
                     try {
-                        Files.walk(filePath)
-                                .sorted(Comparator.reverseOrder())
-                                .map(Path::toFile)
-                                .forEach(File::delete);
+                        if (Files.exists(filePath))
+                            Files.walk(filePath)
+                                    .sorted(Comparator.reverseOrder())
+                                    .map(Path::toFile)
+                                    .forEach(File::delete);
                     } catch (IOException e) {
-                        log.error("File delete error", e);
+                        log.warn("File delete error", e);
                     }
                     return false;
                 }
-            } else if (!Files.isRegularFile(filePath) || !Objects.equals(Hash.getHashFile(filePath), file.getValue()))
+            } else if (!Files.isRegularFile(filePath) || Hash.getHashFile(filePath) != file.getValue())
                 return false;
         }
         return true;
@@ -141,25 +142,28 @@ public class FileUpdate {
     private static void runGame(final FileConst run) {
         form.ProgressBar.setString("Run game");
         try {
+            String command = "";
             switch (Util.getOS()) {
                 case WINDOWS:
-                    Runtime.getRuntime().exec(run.windowsRun.replace("%java%", Config.getJavaPath())
+                    command = run.windowsRun.replace("%java%", Config.getJavaPath())
                             .replace("%option%", Config.config.JVMOp).replace("%path%", Config.getGamePath())
-                            .replace("%user%", Config.config.userName).split(" "));
+                            .replace("%user%", Config.config.userName);
                     break;
                 case MAC:
-                    Runtime.getRuntime().exec(run.macosRun.replace("%java%", Config.getJavaPath())
+                    command = run.macosRun.replace("%java%", Config.getJavaPath())
                             .replace("%option%", Config.config.JVMOp).replace("%path%", Config.getGamePath())
-                            .replace("%user%", Config.config.userName).split(" "));
+                            .replace("%user%", Config.config.userName);
                     break;
                 case LINUX:
-                    Runtime.getRuntime().exec(run.linuxRun.replace("%java%", Config.getJavaPath())
+                    command = run.linuxRun.replace("%java%", Config.getJavaPath())
                             .replace("%option%", Config.config.JVMOp).replace("%path%", Config.getGamePath())
-                            .replace("%user%", Config.config.userName).split(" "));
+                            .replace("%user%", Config.config.userName);
                     break;
                 default:
                     throw new NullPointerException("Unknown OS");
             }
+            log.debug(command);
+            Runtime.getRuntime().exec(command);
             System.exit(0);
         } catch (IOException | NullPointerException e) {
             closeBar("Fail run game");

@@ -30,7 +30,7 @@ public class Language implements Comparable<Language> {
     public final String select;
     public final String selected;
     public final String url;
-    public final Map<String, String> hashs;
+    public final Map<String, Integer> hashs;
 
     public Language(final String name, final String select, final String selected, final boolean downloaded) {
         url = "";

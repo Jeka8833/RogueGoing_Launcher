@@ -42,7 +42,7 @@ public class WebConnect {
                 0, Long.MAX_VALUE);
     }
 
-    public static void downloadAndExtract(final String url, final String path) throws IOException {
+    public static void downloadAndExtract(final String url, final String path, final String rename) throws IOException {
         log.info("Extract form site: " + url);
         final File destDir = new File(path);
         if (!destDir.exists())
@@ -50,7 +50,8 @@ public class WebConnect {
         try (ZipInputStream zipIn = new ZipInputStream(new URL(url).openConnection().getInputStream())) {
             ZipEntry entry = zipIn.getNextEntry();
             while (entry != null) {
-                final String filePath = path + File.separator + entry.getName();
+                final String entryName = entry.getName();
+                final String filePath = path + File.separator + (rename == null || rename.isEmpty() ? entryName : rename + entryName.substring(entryName.indexOf("/")));
                 if (!entry.isDirectory())
                     extractFile(zipIn, filePath);
                 else new File(filePath).mkdir();

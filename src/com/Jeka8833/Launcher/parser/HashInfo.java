@@ -4,11 +4,13 @@ import java.util.Map;
 
 public class HashInfo {
     
-    public String url;
-    public Map<String, String> hash;
-    
-    public HashInfo(String url, Map<String, String> hash){
+    public final String url;
+    public final String rename;
+    public final Map<String, Integer> hash;
+
+    public HashInfo(final String url, String rename, final Map<String, Integer> hash){
         this.url = url;
+        this.rename = rename;
         this.hash = hash;
-    }    
+    }
 }
