@@ -76,36 +76,31 @@ public class FileUpdate {
     @NotNull
     private static List<HashInfo> getFileList(final FileConst file) throws NullPointerException {
         final List<HashInfo> hashInfos = new ArrayList<>();
-        switch (Util.getBitness()) {
-            case B_64:
-                switch (Util.getOS()) {
-                    case WINDOWS:
-                        hashInfos.addAll(file.windows.x64);
-                        break;
-                    case LINUX:
-                        hashInfos.addAll(file.linux.x64);
-                        break;
-                    case MAC:
-                        hashInfos.addAll(file.macos.x64);
-                        break;
-                    default:
-                        throw new NullPointerException("Unknown OS");
-                }
-                break;
-            case B_32:
-                switch (Util.getOS()) {
-                    case WINDOWS:
-                        hashInfos.addAll(file.windows.x32);
-                        break;
-                    case LINUX:
-                        hashInfos.addAll(file.linux.x32);
-                        break;
-                    default:
-                        throw new NullPointerException("Unknown OS");
-                }
-                break;
-            default:
-                throw new NullPointerException("Unknown bitness");
+        if (Util.isX64) {
+            switch (Util.os) {
+                case WINDOWS:
+                    hashInfos.addAll(file.windows.x64);
+                    break;
+                case LINUX:
+                    hashInfos.addAll(file.linux.x64);
+                    break;
+                case MAC:
+                    hashInfos.addAll(file.macos.x64);
+                    break;
+                default:
+                    throw new NullPointerException("Unknown OS");
+            }
+        } else {
+            switch (Util.os) {
+                case WINDOWS:
+                    hashInfos.addAll(file.windows.x32);
+                    break;
+                case LINUX:
+                    hashInfos.addAll(file.linux.x32);
+                    break;
+                default:
+                    throw new NullPointerException("Unknown OS");
+            }
         }
         hashInfos.addAll(file.files);
         for (Language lang : Language.lang)
@@ -143,7 +138,7 @@ public class FileUpdate {
         form.ProgressBar.setString("Run game");
         try {
             String command = "";
-            switch (Util.getOS()) {
+            switch (Util.os) {
                 case WINDOWS:
                     command = run.windowsRun.replace("%java%", Config.getJavaPath())
                             .replace("%option%", Config.config.JVMOp).replace("%path%", Config.getGamePath())

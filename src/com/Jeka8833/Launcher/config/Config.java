@@ -14,7 +14,7 @@ public class Config {
     public static Data config = new Data();
 
     private static final Gson json = new Gson();
-    private static final Path path = Util.defaultPath().resolve("launcher.json");
+    private static final Path path = Util.defaultPath.resolve("launcher.json");
 
     public static void writeConfig() {
         try {
@@ -35,11 +35,11 @@ public class Config {
     }
 
     public static String getGamePath() {
-        return config.gamePath.isEmpty() ? Util.defaultPath().toString() : config.gamePath;
+        return config.gamePath.isEmpty() ? Util.defaultPath.toString() : config.gamePath;
     }
 
     public static String getJavaPath() {
-        if (Util.getOS() == Util.OS.WINDOWS)
+        if (Util.os == Util.OS.WINDOWS)
             return config.javaPath.isEmpty() ? getGamePath() + "\\jre\\bin\\javaw.exe" : config.javaPath;
         return config.javaPath.isEmpty() ? getGamePath() + "/jre/bin/java" : config.javaPath;
     }

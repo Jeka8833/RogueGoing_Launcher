@@ -135,7 +135,7 @@ public class AboutFrame extends javax.swing.JFrame {
     private void bugMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_bugMousePressed
         final String url = "https://github.com/Jeka8833/RogueGoing_Launcher";
         try {
-            switch (Util.getOS()) {
+            switch (Util.os) {
                 case WINDOWS:
                     Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + url);
                     break;

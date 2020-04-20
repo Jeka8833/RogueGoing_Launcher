@@ -15,7 +15,7 @@ public class JavaFilter extends FileFilter {
 
         if (i > 0 && i < s.length() - 1) {
             final String format = s.substring(i).toLowerCase();
-            switch (Util.getOS()) {
+            switch (Util.os) {
                 case WINDOWS:
                     return format.equals(".exe");
                 case LINUX:
@@ -28,7 +28,7 @@ public class JavaFilter extends FileFilter {
 
     @Override
     public String getDescription() {
-        if (Util.getOS() == Util.OS.WINDOWS) {
+        if (Util.os == Util.OS.WINDOWS) {
             return "Exe file(.exe)";
         }
         return "Java file";
