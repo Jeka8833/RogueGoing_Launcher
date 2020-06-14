@@ -137,7 +137,7 @@ public class FileUpdate {
     private static void runGame(final FileConst run) {
         form.ProgressBar.setString("Run game");
         try {
-            String command = "";
+            String command;
             switch (Util.os) {
                 case WINDOWS:
                     command = run.windowsRun.replace("%java%", Config.getJavaPath())

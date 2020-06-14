@@ -1,9 +1,15 @@
 package com.Jeka8833.Launcher;
 
+import org.apache.logging.log4j.LogManager;
+
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class Util {
+
+    private static final org.apache.logging.log4j.Logger log = LogManager.getLogger(Util.class);
 
     public static final Path defaultPath;
     public static final OS os;
@@ -31,6 +37,12 @@ public class Util {
         }
         if (os == OS.WINDOWS) isX64 = System.getenv("ProgramFiles(x86)") != null;
         else isX64 = System.getProperty("os.arch").contains("64");
+
+        try {
+            Files.createDirectories(defaultPath);
+        } catch (IOException e) {
+            log.fatal("Fail create main folder", e);
+        }
     }
 
     public enum OS {
